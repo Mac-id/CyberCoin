@@ -12,29 +12,30 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get Date
         id: get-date
-        run: |
-          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      # Cache für schnellere Builds (SDK/NDK müssen nicht jedes Mal neu geladen werden)
+      # Cache für schnellere Builds (spart Zeit beim zweiten Mal)
       - name: Cache Buildozer
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .buildozer
           key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
 
+      # Korrigierte Buildozer Action (Groß-/Kleinschreibung & Version)
       - name: Build with Buildozer
         uses: ArtemSerebriakov/buildozer-action@v1
         with:
-          buildozer_version: master
           command: buildozer android debug
           repository_root: .
 
+      # Aktualisierte Version v4 (behebt den Deprecation Error)
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CyberCoin-Android-${{ steps.get-date.outputs.date }}
           path: bin/*.apk
+          if-no-files-found: error

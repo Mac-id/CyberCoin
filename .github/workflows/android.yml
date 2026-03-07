@@ -29,6 +29,20 @@ jobs:
           # Pfad zum sdkmanager explizit angeben
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
 
+      - name: Force Install Android Build-Tools (includes Aidl)
+        run: |
+          # 1. Den Pfad zum sdkmanager finden (der ist auf GitHub Runnern vorinstalliert)
+          SDK_MANAGER=$(find $ANDROID_HOME -name "sdkmanager" | head -n 1)
+          
+          # 2. Lizenzen vorab absegnen
+          yes | $SDK_MANAGER --licenses --sdk_root=$ANDROID_HOME
+          
+          # 3. Die Build-Tools Version 34 installieren (darin ist Aidl enthalten!)
+          $SDK_MANAGER "build-tools;34.0.0" "platforms;android-34" --sdk_root=$ANDROID_HOME
+          
+          # 4. Prüfen, wo Aidl gelandet ist (für das Log)
+          find $ANDROID_HOME -name "aidl"
+
       - name: Build with Buildozer
         run: |
           # Wir löschen alte Fehlversuche, um sauber zu starten

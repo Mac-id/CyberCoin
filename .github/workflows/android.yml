@@ -3,39 +3,49 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Spezifische Version für bessere Stabilität
+    # Wir wechseln zurück auf 22.04 für maximale Kompatibilität mit Android-NDK-Builds
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Date
-        id: get-date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      # Installiert benötigte Abhängigkeiten für den Runner
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
-
-      # Wir nutzen jetzt die offizielle Kivy Buildozer Action
-      - name: Build with Buildozer
-        uses: kivy/buildozer-action@master
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          save_buildozer_dir: true
-          # Der Befehl für den Debug-Build
-          command: buildozer android debug
-          repository_root: .
+          python-version: '3.11'
 
-      - name: Upload APK Artifact
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          # Vollständiges Paket-Set für Kivy/Android
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libcanberra-gtk-module
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33 setuptools
+
+      - name: Build with Buildozer
+        run: |
+          # 1. Verzeichnisse erstellen, falls sie noch nicht da sind
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          
+          # 2. Alle Android-Lizenzen automatisch akzeptieren
+          # Wir suchen den SDK-Manager im Buildozer-Verzeichnis und bestätigen alles
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # 3. Build starten
+          buildozer android debug
+        env:
+          BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
+          # Wir nutzen das im Runner vorinstallierte Android SDK, das spart Zeit
+          ANDROID_HOME: /usr/local/lib/android/sdk
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CyberCoin-Android-${{ steps.get-date.outputs.date }}
+          name: CyberCoin-App
           path: bin/*.apk
-          if-no-files-found: error

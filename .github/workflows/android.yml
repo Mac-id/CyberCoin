@@ -26,8 +26,8 @@ jobs:
 
       - name: Accept Android Licenses
         run: |
-          # Akzeptiert alle Lizenzen für das vorinstallierte SDK im Runner
-          yes | sdkmanager --licenses --sdk_root=$ANDROID_HOME
+          # Pfad zum sdkmanager explizit angeben
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
 
       - name: Build with Buildozer
         run: |

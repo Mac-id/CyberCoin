@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Spezifische Version für bessere Stabilität
 
     steps:
       - name: Checkout code
@@ -18,21 +18,21 @@ jobs:
         id: get-date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
-      # Cache für schnellere Builds (spart Zeit beim zweiten Mal)
-      - name: Cache Buildozer
-        uses: actions/cache@v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+      # Installiert benötigte Abhängigkeiten für den Runner
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
 
-      # Korrigierte Buildozer Action (Groß-/Kleinschreibung & Version)
+      # Wir nutzen jetzt die offizielle Kivy Buildozer Action
       - name: Build with Buildozer
-        uses: ArtemSerebriakov/buildozer-action@v1
+        uses: kivy/buildozer-action@master
         with:
+          save_buildozer_dir: true
+          # Der Befehl für den Debug-Build
           command: buildozer android debug
           repository_root: .
 
-      # Aktualisierte Version v4 (behebt den Deprecation Error)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:

@@ -24,40 +24,38 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.33 setuptools
 
-      - name: Accept Android Licenses
+      - name: Force Install and Link Aidl (Fixed)
         run: |
-          # Pfad zum sdkmanager explizit angeben
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
-
-      - name: Force Install and Link Aidl
-        run: |
-          # 1. SDK Pfade definieren
-          SDK_MANAGER=$(find $ANDROID_HOME -name "sdkmanager" | head -n 1)
+          # 1. SDK Pfade
+          SDK_MANAGER=$(find $ANDROID_HOME -name "sdkmanager" | grep "cmdline-tools" | head -n 1)
           
-          # 2. Lizenzen akzeptieren & Version 34 installieren (Stabil)
+          # 2. Lizenzen und Build-Tools 34 (Stabil)
           yes | $SDK_MANAGER --licenses --sdk_root=$ANDROID_HOME
-          $SDK_MANAGER "build-tools;34.0.0" "platforms;android-34" --sdk_root=$ANDROID_HOME
+          $SDK_MANAGER "build-tools;34.0.0" "platforms;android-34" "platform-tools" --sdk_root=$ANDROID_HOME
           
-          # 3. Den Ordner erstellen, in dem Buildozer sucht
+          # 3. Zielordner für Buildozer vorbereiten
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0
           
-          # 4. Aidl finden und dorthin kopieren oder verlinken
-          AIDL_PATH=$(find $ANDROID_HOME -name "aidl" | head -n 1)
-          cp $AIDL_PATH /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0/
+          # 4. DIE DATEI FINDEN (Nur die ausführbare Datei, keine Ordner!)
+          # Wir suchen spezifisch im build-tools Ordner nach der binären Datei 'aidl'
+          REAL_AIDL=$(find $ANDROID_HOME/build-tools/34.0.0 -name "aidl" -type f | head -n 1)
           
-          # 5. Sicherstellen, dass Buildozer das SDK Verzeichnis als Ganzes akzeptiert
-          ln -s /usr/local/lib/android/sdk/platforms /home/runner/.buildozer/android/platform/android-sdk/platforms || true
+          # 5. Kopieren mit Gewalt (Force)
+          cp -f $REAL_AIDL /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0/
+          
+          # 6. Berechtigungen setzen
+          chmod +x /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0/aidl
 
       - name: Build with Buildozer
         run: |
-          # Wir zwingen Buildozer, die installierte Version zu nutzen
+          # Wir zwingen Buildozer das globale SDK zu erkennen
           buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
-          # Wir verlinken auf das existierende SDK im Runner (spart 10 Min Downloadzeit)
-          ANDROID_SDK_HOME: /usr/local/lib/android/sdk
-          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle
-
+          # Diese Envs sagen Buildozer: "Guck hier zuerst!"
+          ANDROID_SDK_PATH: /usr/local/lib/android/sdk
+          ANDROID_NDK_PATH: /usr/local/lib/android/sdk/ndk-bundle
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

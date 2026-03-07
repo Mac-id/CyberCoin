@@ -20,7 +20,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          # libtinfo5 wurde durch libtinfo6 ersetzt, wir fügen libncurses5 hinzu falls verfügbar
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses-dev libssl-dev cmake libffi-dev
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 

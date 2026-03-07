@@ -24,17 +24,18 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.33 setuptools
 
-      - name: Pre-Accept Licenses
+      - name: Pre-Accept Licenses (The "Silver Bullet")
         run: |
-          # Wir legen die Lizenzen direkt dort ab, wo Buildozer sie erwartet.
-          # Das verhindert die Abfrage und den Abbruch.
+          # Wir erstellen die Lizenz-Hashes manuell im lokalen Buildozer-Pfad.
+          # Das gaukelt Buildozer vor, die Lizenzen seien bereits akzeptiert.
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb74f50229d759a1c04d\n24333f8a63b6825e11c210439401614f1659a721" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
           echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4d0af7d96a50a3b31018c31e5d2334a98" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
 
       - name: Build with Buildozer
         run: |
-          # Wir lassen Buildozer einfach machen (ohne Pfad-Angaben)
+          # WICHTIG: Keine Pfad-Variablen (wie ANDROID_SDK_PATH) setzen!
+          # Buildozer soll sein eigenes SDK unter ~/.buildozer installieren.
           buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1

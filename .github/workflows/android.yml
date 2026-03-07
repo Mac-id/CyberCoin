@@ -6,7 +6,8 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Wir wechseln zurück auf 22.04 für maximale Kompatibilität mit Android-NDK-Builds
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -20,18 +21,19 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          # libtinfo5 wurde durch libtinfo6 ersetzt, wir fügen libncurses5 hinzu falls verfügbar
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses-dev libssl-dev cmake libffi-dev
+          # Vollständiges Paket-Set für Kivy/Android
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libcanberra-gtk-module
           pip install --upgrade pip
-          pip install buildozer cython==0.29.33
+          pip install buildozer cython==0.29.33 setuptools
 
       - name: Build with Buildozer
         run: |
-          # Wir erzwingen die Zustimmung zu den SDK-Lizenzen
-          yes | buildozer android debug
+          # Wir bauen im "Warn-Modus", um zu sehen, was passiert
+          buildozer android debug
         env:
-          # Verhindert, dass der Build wegen Root-Rechten abbricht
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
+          # Wir setzen den Pfad explizit, falls Buildozer verwirrt ist
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

@@ -39,6 +39,10 @@ android.minapi = 21
 # (str) Android NDK version to use
 android.ndk = 25b
 
+android.sdk_path = /home/runner/.buildozer/android/platform/android-sdk
+android.sdk_tools_version = latest
+android.accept_sdk_license = True
+
 # (str) Android SDK version to use
 android.sdk = 34
 

@@ -17,7 +17,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      # DAS IST DER FIX FÜR DEN GRADLE FEHLER:
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
@@ -31,8 +30,24 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.33 setuptools
 
-      - name: Accept Android SDK Licenses
+      - name: Deep Fix SDK Structure (sdkmanager path fix)
         run: |
+          # 1. Erstelle die Ordnerstruktur, die Buildozer erzwingt
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+          
+          # 2. Lade die Command Line Tools (fixe Version für Stabilität)
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip commandlinetools-linux-9477386_latest.zip
+          
+          # 3. Kopiere den Inhalt so, dass er im alten UND im neuen Pfad liegt
+          # Buildozer sucht oft in tools/bin/sdkmanager
+          cp -r cmdline-tools/* ~/.buildozer/android/platform/android-sdk/tools/
+          
+          # 4. Fix für die "latest" Struktur, die Google jetzt nutzt
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          cp -r cmdline-tools/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
+
+          # 5. Lizenzen vorab akzeptieren (verhindert hängenbleiben)
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb74f50229d759a1c04d\n24333f8a63b6825e11c210439401614f1659a721" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 
@@ -41,7 +56,6 @@ jobs:
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
 
-      # Damit du dir die APK danach auch herunterladen kannst!
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

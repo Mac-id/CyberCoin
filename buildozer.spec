@@ -40,7 +40,7 @@ android.minapi = 21
 android.ndk = 25b
 
 # (str) Android SDK version to use
-android.sdk = 33
+android.sdk = 34
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded)
 # android.ndk_path = 

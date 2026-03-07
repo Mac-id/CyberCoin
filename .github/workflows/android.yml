@@ -1,5 +1,4 @@
 name: Build Android APK
-
 on:
   push:
     branches: [ main ]
@@ -7,7 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,24 +28,14 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.33 setuptools
 
-      - name: Deep Fix SDK Structure (sdkmanager path fix)
+      - name: Deep Fix SDK Structure
         run: |
-          # 1. Erstelle die Ordnerstruktur, die Buildozer erzwingt
+          # Erstellt die von Buildozer gesuchte Struktur manuell vorab
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-          
-          # 2. Lade die Command Line Tools (fixe Version für Stabilität)
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip commandlinetools-linux-9477386_latest.zip
-          
-          # 3. Kopiere den Inhalt so, dass er im alten UND im neuen Pfad liegt
-          # Buildozer sucht oft in tools/bin/sdkmanager
           cp -r cmdline-tools/* ~/.buildozer/android/platform/android-sdk/tools/
-          
-          # 4. Fix für die "latest" Struktur, die Google jetzt nutzt
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest
-          cp -r cmdline-tools/* ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
-
-          # 5. Lizenzen vorab akzeptieren (verhindert hängenbleiben)
+          # Lizenzen akzeptieren
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
           echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb74f50229d759a1c04d\n24333f8a63b6825e11c210439401614f1659a721" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
 

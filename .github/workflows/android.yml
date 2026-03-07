@@ -3,39 +3,37 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Spezifische Version für bessere Stabilität
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Get Date
-        id: get-date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-
-      # Installiert benötigte Abhängigkeiten für den Runner
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev
-
-      # Wir nutzen jetzt die offizielle Kivy Buildozer Action
-      - name: Build with Buildozer
-        uses: kivy/buildozer-action@master
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          save_buildozer_dir: true
-          # Der Befehl für den Debug-Build
-          command: buildozer android debug
-          repository_root: .
+          python-version: '3.11'
 
-      - name: Upload APK Artifact
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33
+
+      - name: Build with Buildozer
+        run: |
+          # Wir erzwingen die Zustimmung zu den SDK-Lizenzen
+          yes | buildozer android debug
+        env:
+          # Verhindert, dass der Build wegen Root-Rechten abbricht
+          BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CyberCoin-Android-${{ steps.get-date.outputs.date }}
+          name: CyberCoin-App
           path: bin/*.apk
-          if-no-files-found: error

@@ -6,7 +6,6 @@ on:
 
 jobs:
   build:
-    # Wir wechseln zurück auf 22.04 für maximale Kompatibilität mit Android-NDK-Builds
     runs-on: ubuntu-22.04
 
     steps:
@@ -21,28 +20,43 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          # Vollständiges Paket-Set für Kivy/Android
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev libcanberra-gtk-module
+          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install buildozer cython==0.29.33 setuptools
 
+      - name: Accept Android Licenses
+        run: |
+          # Pfad zum sdkmanager explizit angeben
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses --sdk_root=$ANDROID_HOME
+
+      - name: Force Install and Link Aidl
+        run: |
+          # 1. SDK Pfade definieren
+          SDK_MANAGER=$(find $ANDROID_HOME -name "sdkmanager" | head -n 1)
+          
+          # 2. Lizenzen akzeptieren & Version 34 installieren (Stabil)
+          yes | $SDK_MANAGER --licenses --sdk_root=$ANDROID_HOME
+          $SDK_MANAGER "build-tools;34.0.0" "platforms;android-34" --sdk_root=$ANDROID_HOME
+          
+          # 3. Den Ordner erstellen, in dem Buildozer sucht
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0
+          
+          # 4. Aidl finden und dorthin kopieren oder verlinken
+          AIDL_PATH=$(find $ANDROID_HOME -name "aidl" | head -n 1)
+          cp $AIDL_PATH /home/runner/.buildozer/android/platform/android-sdk/build-tools/34.0.0/
+          
+          # 5. Sicherstellen, dass Buildozer das SDK Verzeichnis als Ganzes akzeptiert
+          ln -s /usr/local/lib/android/sdk/platforms /home/runner/.buildozer/android/platform/android-sdk/platforms || true
+
       - name: Build with Buildozer
         run: |
-          # 1. Verzeichnisse erstellen, falls sie noch nicht da sind
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          
-          # 2. Alle Android-Lizenzen automatisch akzeptieren
-          # Wir suchen den SDK-Manager im Buildozer-Verzeichnis und bestätigen alles
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          # 3. Build starten
+          # Wir zwingen Buildozer, die installierte Version zu nutzen
           buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
-          # Wir nutzen das im Runner vorinstallierte Android SDK, das spart Zeit
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+          # Wir verlinken auf das existierende SDK im Runner (spart 10 Min Downloadzeit)
+          ANDROID_SDK_HOME: /usr/local/lib/android/sdk
+          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

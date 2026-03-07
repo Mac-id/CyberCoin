@@ -19,7 +19,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy==2.3.1
+requirements = python3,kivy==2.3.1,sqlite3
 
 # (str) Supported orientations
 orientation = portrait

@@ -36,8 +36,11 @@ class Coin(Widget):
                 texture.mag_filter = 'nearest'
                 texture.min_filter = 'nearest'
                 self.textures[key] = texture
-            except:
-                print(f"Datei {filename} fehlt!")
+            except Exception as e:
+                print(f"WARNUNG: Textur {filename} fehlt! {e}")
+                # Fallback, damit die App nicht abstürzt
+                if "Kopf" in self.textures:
+                    self.textures[key] = self.textures["Kopf"]
 
     def update_texture(self, texture_key):
         if texture_key in self.textures:

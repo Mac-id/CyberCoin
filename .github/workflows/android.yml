@@ -28,11 +28,20 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Wir bauen im "Warn-Modus", um zu sehen, was passiert
+          # 1. Verzeichnisse erstellen, falls sie noch nicht da sind
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          
+          # 2. Alle Android-Lizenzen automatisch akzeptieren
+          # Wir suchen den SDK-Manager im Buildozer-Verzeichnis und bestätigen alles
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # 3. Build starten
           buildozer android debug
         env:
           BUILDOZER_ALLOW_ORG_PROJECT_ROOT: 1
-          # Wir setzen den Pfad explizit, falls Buildozer verwirrt ist
+          # Wir nutzen das im Runner vorinstallierte Android SDK, das spart Zeit
+          ANDROID_HOME: /usr/local/lib/android/sdk
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
 
       - name: Upload APK

@@ -26,26 +26,26 @@ jobs:
             libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev \
             libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl \
             libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev \
-            libffi-dev uuid-dev tar
+            libffi-dev uuid-dev tar libtool autoconf automake
           pip install --upgrade pip
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Install Android SDK & Accept Licenses
+      - name: Accept Android SDK Licenses
         run: |
-          # SDK Manager finden und Lizenzen akzeptieren
-          # Wir nutzen 'yes', um alle Abfragen mit 'y' zu beantworten
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
+          # Wir nutzen den Pfad, in dem das SDK auf GitHub Runnern standardmäßig liegt
+          # Der 'yes'-Befehl sorgt für die Bestätigung aller Lizenzen
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           
-          # Sicherstellen, dass die Build-Tools installiert werden
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          # Optional: Falls 'latest' nicht existiert, versuchen wir den Fallback
+          if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+          fi
 
       - name: Build with Buildozer
         run: |
-          # Pfad für Buildozer setzen
           export PATH=$PATH:$HOME/.local/bin
-          # Buildozer ausführen (Log-Level 2 für Details bei Fehlern)
+          # Wir erzwingen hier KEIN Update der SDK-Lizenzen innerhalb von Buildozer, 
+          # da wir es bereits im Schritt zuvor erledigt haben.
           buildozer -v android debug
 
       - name: Upload APK

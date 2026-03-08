@@ -26,7 +26,8 @@ jobs:
             zlib1g-dev libsqlite3-dev sqlite3 \
             bzip2 libbz2-dev libssl-dev \
             libgdbm-dev liblzma-dev libreadline-dev libffi-dev \
-            openjdk-11-jdk
+            openjdk-11-jdk \
+            autoconf automake libtool pkg-config zip unzip
 
           pip install --upgrade pip
           pip install buildozer cython virtualenv

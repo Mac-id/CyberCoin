@@ -28,32 +28,27 @@ jobs:
           pip install --upgrade pip
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Pre-install Build-Tools and Accept Licenses
+      - name: Accept Licenses and Set Paths
         run: |
-          SDK_MANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          # 1. Lizenzen im System-SDK akzeptieren
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
           
-          # 1. Alle Lizenzen für das gesamte SDK vorab akzeptieren
-          yes | $SDK_MANAGER --licenses || true
-          
-          # 2. Die Problem-Version 37-rc2 UND die stabile 34 manuell installieren
-          echo "Installiere Build-Tools..."
-          $SDK_MANAGER --install "build-tools;37.0.0-rc2" "build-tools;34.0.0" "platforms;android-34"
-          
-          # 3. Aidl global verlinken, falls Buildozer es nicht findet
-          sudo ln -s $ANDROID_HOME/build-tools/34.0.0/aidl /usr/local/bin/aidl || true
+          # 2. Build-Tools 34.0.0 explizit im System-SDK installieren
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0" "platforms;android-34"
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Buildozer zwingen, das existierende SDK zu nutzen
+          
+          # DIESE EXPORTS SIND ENTSCHEIDEND:
+          # Wir biegen Buildozer auf das vorinstallierte GitHub SDK um
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROIDSDK=$ANDROID_SDK_ROOT
+          
+          # Wir sagen Buildozer, er soll KEIN eigenes SDK installieren
           buildozer -v android debug
         env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          # Verhindert, dass Buildozer selbst nochmal nach Lizenzen fragt
+          # Zusätzliche Sicherheit für Kivy/p4a
           APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FLIP-IT-Debug-APK
-          path: bin/*.apk
+          # Wir nutzen das NDK, das GitHub bereitstellt (spart Zeit und Platz)
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}

@@ -2,7 +2,8 @@ name: Android Build
 
 on:
 push:
-branches: ["main"]
+branches:
+- main
 
 jobs:
 build:
@@ -31,12 +32,26 @@ steps:
         libltdl-dev \
         m4 \
         ffmpeg \
-        libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-        libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
-        zlib1g-dev libsqlite3-dev sqlite3 \
-        bzip2 libbz2-dev libssl-dev \
-        libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev \
-        libffi-dev uuid-dev \
+        libsdl2-dev \
+        libsdl2-image-dev \
+        libsdl2-mixer-dev \
+        libsdl2-ttf-dev \
+        libportmidi-dev \
+        libswscale-dev \
+        libavformat-dev \
+        libavcodec-dev \
+        zlib1g-dev \
+        libsqlite3-dev \
+        sqlite3 \
+        bzip2 \
+        libbz2-dev \
+        libssl-dev \
+        libgdbm-dev \
+        libgdbm-compat-dev \
+        liblzma-dev \
+        libreadline-dev \
+        libffi-dev \
+        uuid-dev \
         openjdk-17-jdk
 
   - name: Install Python Tools
@@ -51,13 +66,13 @@ steps:
       rm -rf .buildozer
       rm -rf bin
 
-  - name: Build APK with Buildozer
+  - name: Build APK
     run: |
       buildozer -v android debug
     env:
       APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
 
-  - name: Upload APK Artifact
+  - name: Upload APK
     uses: actions/upload-artifact@v4
     with:
       name: cybercoin-debug-apk

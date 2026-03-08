@@ -77,4 +77,3 @@ steps:
     with:
       name: cybercoin-debug-apk
       path: bin/*.apk
-```

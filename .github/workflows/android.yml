@@ -18,34 +18,39 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip build-essential git python3 python3-dev \
             ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
             libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev \
-            libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl \
+            libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl \
             libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev \
             libffi-dev uuid-dev tar libtool autoconf automake
           pip install --upgrade pip
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses (The Fix)
         run: |
-          # Wir nutzen den Pfad, in dem das SDK auf GitHub Runnern standardmäßig liegt
-          # Der 'yes'-Befehl sorgt für die Bestätigung aller Lizenzen
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # Pfade zu den SDK-Tools auf GitHub Runnern definieren
+          SDK_MANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          SDK_MANAGER_OLD="$ANDROID_HOME/tools/bin/sdkmanager"
           
-          # Optional: Falls 'latest' nicht existiert, versuchen wir den Fallback
-          if [ ! -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+          # Lizenzen akzeptieren (wir probieren beide Pfade)
+          if [ -f "$SDK_MANAGER" ]; then
+            yes | "$SDK_MANAGER" --licenses
+          elif [ -f "$SDK_MANAGER_OLD" ]; then
+            yes | "$SDK_MANAGER_OLD" --licenses
           fi
+          
+          # Manuelle Vorab-Installation der Build-Tools, um 'Aidl not found' zu verhindern
+          # Wir nutzen Version 34.0.0, da diese stabil ist
+          yes | "$SDK_MANAGER" "build-tools;34.0.0" "platform-tools" "platforms;android-34" || true
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # Wir erzwingen hier KEIN Update der SDK-Lizenzen innerhalb von Buildozer, 
-          # da wir es bereits im Schritt zuvor erledigt haben.
+          # -v zeigt den detaillierten Log an, falls doch etwas schiefgeht
           buildozer -v android debug
 
       - name: Upload APK

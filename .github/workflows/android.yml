@@ -28,27 +28,31 @@ jobs:
           pip install --upgrade pip
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Accept Licenses and Set Paths
+      - name: Fix Android SDK License & Aidl (The Final Fix)
         run: |
-          # 1. Lizenzen im System-SDK akzeptieren
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # 1. Wir erstellen Buildozers Zielordner vorab manuell
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
           
-          # 2. Build-Tools 34.0.0 explizit im System-SDK installieren
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0" "platforms;android-34"
+          # 2. Wir schreiben die Lizenz-Hashes direkt in Dateien. 
+          # Das ist der sicherste Weg, damit Buildozer NICHT mehr fragt.
+          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb743402295594811d1e\n24333f8a63b6825ea4c5573f69c02119f38bc11f" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
+          
+          # 3. Wir installieren aidl systemweit als Fallback
+          sudo apt-get install -y aidl
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          
-          # DIESE EXPORTS SIND ENTSCHEIDEND:
-          # Wir biegen Buildozer auf das vorinstallierte GitHub SDK um
-          export ANDROID_HOME=$ANDROID_SDK_ROOT
-          export ANDROIDSDK=$ANDROID_SDK_ROOT
-          
-          # Wir sagen Buildozer, er soll KEIN eigenes SDK installieren
+          # Wir löschen alte SDK Pfade, damit Buildozer sauber in seinem eigenen Pfad (den wir vorbereitet haben) arbeitet
+          unset ANDROID_HOME
+          unset ANDROID_SDK_ROOT
           buildozer -v android debug
         env:
-          # Zusätzliche Sicherheit für Kivy/p4a
           APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
-          # Wir nutzen das NDK, das GitHub bereitstellt (spart Zeit und Platz)
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FLIP-IT-Debug-APK
+          path: bin/*.apk

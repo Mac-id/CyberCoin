@@ -27,7 +27,7 @@ orientation = portrait
 fullscreen = 1
 
 # (int) Target Android API (33 ist oft stabiler als 34 für Kivy 2.3.1)
-android.api = 33
+android.api = 34
 
 # (int) Minimum API your APK will support.
 android.minapi = 21
@@ -35,8 +35,10 @@ android.minapi = 21
 # (str) Android NDK version to use
 android.ndk = 25b
 
+android.build_tools_version = 34.0.0
+
 # (str) Android SDK version to use
-android.sdk = 33
+android.sdk = 34
 
 # (list) The Android architectures to build for
 android.archs = arm64-v8a, armeabi-v7a

@@ -25,11 +25,12 @@ jobs:
             zlib1g-dev libsqlite3-dev sqlite3 \
             bzip2 libbz2-dev libssl-dev \
             libgdbm-dev liblzma-dev libreadline-dev libffi-dev \
-            openjdk-11-jdk \
+            openjdk-17-jdk \
             autoconf automake libtool libtool-bin libltdl-dev pkg-config zip unzip
 
           pip install --upgrade pip
-          pip install buildozer cython virtualenv
+          # WICHTIG: Cython 0.29.x verwenden, um den 'long' Fehler zu vermeiden
+          pip install "buildozer>=1.5.0" "cython==0.29.36" virtualenv
 
       - name: Build APK
         run: |

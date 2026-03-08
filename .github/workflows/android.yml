@@ -3,8 +3,6 @@ name: Android Build
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
   build:
@@ -30,27 +28,26 @@ jobs:
           pip install --upgrade pip
           pip install --user --upgrade buildozer cython virtualenv
 
-      - name: Accept Android SDK Licenses (The Fix)
+      - name: Force Install Aidl & Build-Tools
         run: |
-          # Pfade zu den SDK-Tools auf GitHub Runnern definieren
-          SDK_MANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          SDK_MANAGER_OLD="$ANDROID_HOME/tools/bin/sdkmanager"
+          # Wir suchen den sdkmanager und akzeptieren ALLES
+          SDK_PATH="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           
-          # Lizenzen akzeptieren (wir probieren beide Pfade)
-          if [ -f "$SDK_MANAGER" ]; then
-            yes | "$SDK_MANAGER" --licenses
-          elif [ -f "$SDK_MANAGER_OLD" ]; then
-            yes | "$SDK_MANAGER_OLD" --licenses
-          fi
+          # 1. Lizenzen mit "yes" durchwinken
+          yes | $SDK_PATH --licenses || true
           
-          # Manuelle Vorab-Installation der Build-Tools, um 'Aidl not found' zu verhindern
-          # Wir nutzen Version 34.0.0, da diese stabil ist
-          yes | "$SDK_MANAGER" "build-tools;34.0.0" "platform-tools" "platforms;android-34" || true
+          # 2. Build-Tools MANUELL INSTALLIEREN (hier steckt aidl drin!)
+          echo "Installiere Build-Tools 34.0.0..."
+          $SDK_PATH --install "build-tools;34.0.0" "platforms;android-34" "platform-tools"
+          
+          # 3. Den Pfad für Buildozer sichtbar machen
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # -v zeigt den detaillierten Log an, falls doch etwas schiefgeht
+          # Wir nutzen -v (verbose), damit wir sehen, was er tut
           buildozer -v android debug
 
       - name: Upload APK

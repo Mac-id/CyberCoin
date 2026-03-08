@@ -2,7 +2,7 @@ name: Android Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -11,48 +11,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Install System Dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev \
-            ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev \
-            libsqlite3-dev sqlite3 bzip2 libbz2-dev libssl-dev openssl \
-            libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libncursesw5-dev \
-            libffi-dev uuid-dev tar libtool autoconf automake openjdk-17-jdk
+          sudo apt-get install -y \
+            build-essential git \
+            ffmpeg \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+            zlib1g-dev libsqlite3-dev sqlite3 \
+            bzip2 libbz2-dev libssl-dev \
+            libgdbm-dev liblzma-dev libreadline-dev libffi-dev \
+            openjdk-11-jdk
+
           pip install --upgrade pip
-          pip install --user --upgrade buildozer cython virtualenv
+          pip install buildozer cython virtualenv
 
-      - name: Fix Android SDK License & Aidl (The Final Fix)
+      - name: Build APK
         run: |
-          # 1. Wir erstellen Buildozers Zielordner vorab manuell
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
-          
-          # 2. Wir schreiben die Lizenz-Hashes direkt in Dateien. 
-          # Das ist der sicherste Weg, damit Buildozer NICHT mehr fragt.
-          echo -e "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb743402295594811d1e\n24333f8a63b6825ea4c5573f69c02119f38bc11f" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo -e "\n84831b9409646a918e30573bab4c9c91346d8abd" > /home/runner/.buildozer/android/platform/android-sdk/licenses/android-sdk-preview-license
-          
-          # 3. Wir installieren aidl systemweit als Fallback
-          sudo apt-get install -y aidl
-
-      - name: Build with Buildozer
-        run: |
-          export PATH=$PATH:$HOME/.local/bin
-          # Wir löschen alte SDK Pfade, damit Buildozer sauber in seinem eigenen Pfad (den wir vorbereitet haben) arbeitet
-          unset ANDROID_HOME
-          unset ANDROID_SDK_ROOT
           buildozer -v android debug
         env:
           APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: FLIP-IT-Debug-APK
+          name: android-apk
           path: bin/*.apk

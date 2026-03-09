@@ -3,11 +3,11 @@ name: Android Build
 on:
   push:
     branches: ["main"]
-  workflow_dispatch: # Erlaubt den manuellen Start über GitHub
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # WICHTIG für alte Android NDK Abhängigkeiten
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Code
@@ -28,7 +28,6 @@ jobs:
         run: |
           sudo apt-get update
           
-          # Hinzufügen der essenziellen Android-Build-Tool Abhängigkeiten
           sudo apt-get install -y \
             build-essential git ffmpeg \
             libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
@@ -41,8 +40,17 @@ jobs:
 
           pip install --upgrade pip
           
-          # Cython strikt auf 0.29.33 gepinnt, um den "long"-Fehler in pyjnius zu verhindern
           pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv setuptools
+
+      - name: Pre-download freetype (Bypass Savannah Server Crash)
+        run: |
+          echo "Lade freetype vom stabilen GNU Mirror herunter..."
+          mkdir -p .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/freetype
+          curl -L -o .buildozer/android/platform/build-arm64-v8a_armeabi-v7a/packages/freetype/freetype-2.10.1.tar.gz https://ftp.gnu.org/gnu/freetype/freetype-2.10.1.tar.gz
+          
+          # Zur Sicherheit auch in den alternativen Cache-Ordner legen
+          mkdir -p ~/.local/share/python-for-android/packages/freetype
+          curl -L -o ~/.local/share/python-for-android/packages/freetype/freetype-2.10.1.tar.gz https://ftp.gnu.org/gnu/freetype/freetype-2.10.1.tar.gz
 
       - name: Build APK with Buildozer
         run: |

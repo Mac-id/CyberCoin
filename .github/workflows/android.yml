@@ -3,11 +3,11 @@ name: Android Build
 on:
   push:
     branches: ["main"]
-  workflow_dispatch: # Erlaubt es dir, die Action manuell über die GitHub-Oberfläche zu starten!
+  workflow_dispatch: # Erlaubt den manuellen Start über GitHub
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # WICHTIG: Auf 22.04 pinnen, damit libncurses5 für aidl verfügbar ist
+    runs-on: ubuntu-22.04 # WICHTIG für alte Android NDK Abhängigkeiten
 
     steps:
       - name: Checkout Code
@@ -28,7 +28,7 @@ jobs:
         run: |
           sudo apt-get update
           
-          # Hinzufügen der essenziellen Android-Build-Tool Abhängigkeiten (libncurses5, libtinfo5)
+          # Hinzufügen der essenziellen Android-Build-Tool Abhängigkeiten
           sudo apt-get install -y \
             build-essential git ffmpeg \
             libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
@@ -41,12 +41,11 @@ jobs:
 
           pip install --upgrade pip
           
-          # Cython Restriktion entfernt, da Kivy 2.3.1 Cython 3.x benötigt
-          pip install buildozer cython virtualenv setuptools
+          # Cython strikt auf 0.29.33 gepinnt, um den "long"-Fehler in pyjnius zu verhindern
+          pip install "buildozer>=1.5.0" "Cython==0.29.33" virtualenv setuptools
 
       - name: Build APK with Buildozer
         run: |
-          # Du brauchst den Cache in der Action nicht löschen, der Server ist eh bei jedem Lauf frisch.
           buildozer -v android debug
         env:
           APP_ANDROID_ACCEPT_SDK_LICENSE: "True"

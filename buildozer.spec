@@ -1,5 +1,5 @@
 [app]
-title = CyberCoin
+title = FLIP IT
 package.name = cybercoin
 package.domain = org.pixelart
 
@@ -7,6 +7,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,json,ttf
 
 version = 0.1
+icon.filename = pixil-frame-0-startkopf.png
 
 # 'sh' und 'six' entfernt, werden nicht auf dem Gerät benötigt
 requirements = python3,kivy==2.3.1,pillow

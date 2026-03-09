@@ -59,7 +59,15 @@ jobs:
           APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
           JAVA_HOME: ${{ env.JAVA_HOME }}
 
-      - name: Upload APK via Bashupload (Bypass GitHub Storage)
+      - name: Kugelsicherer APK Upload (3 Fallbacks)
         run: |
-          echo "Lade APK auf temporären Server hoch..."
-          curl -T bin/*.apk https://bashupload.com
+          for file in bin/*.apk; do
+            echo "=== 1. Versuch: transfer.sh ==="
+            curl --upload-file "$file" "https://transfer.sh/CyberCoin.apk" || echo "Fehlgeschlagen"
+            
+            echo -e "\n\n=== 2. Versuch: file.io ==="
+            curl -F "file=@$file" https://file.io || echo "Fehlgeschlagen"
+            
+            echo -e "\n\n=== 3. Versuch: bashupload ==="
+            curl -T "$file" https://bashupload.com || echo "Fehlgeschlagen"
+          done

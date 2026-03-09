@@ -1,5 +1,6 @@
 import kivy
 import random
+import os  # <-- Hinzugefügt für die Pfad-Verwaltung
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
@@ -122,7 +123,15 @@ class CyberCoinRoot(FloatLayout):
     sign_tex = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        self.store = JsonStore('settings.json')
+        # FIX: Auf Android das beschreibbare Datenverzeichnis nutzen
+        if platform == 'android':
+            app_dir = App.get_running_app().user_data_dir
+            store_path = os.path.join(app_dir, 'settings.json')
+        else:
+            store_path = 'settings.json'
+            
+        self.store = JsonStore(store_path)
+        
         if self.store.exists('background'):
             self.bg_index = self.store.get('background')['index']
         else:

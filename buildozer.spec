@@ -8,20 +8,20 @@ source.include_exts = py,png,jpg,kv,json,ttf
 
 version = 0.1
 
-# Wir fügen 'sh' und 'six' hinzu, da Kivy-Interna das oft brauchen
-requirements = python3,kivy==2.3.1,pillow,sh,six
+# 'sh' und 'six' entfernt, werden nicht auf dem Gerät benötigt
+requirements = python3,kivy==2.3.1,pillow
 
 orientation = portrait
 fullscreen = 1
 
-# Erhöhung der API auf 34 (Standard für 2024/25) und NDK Fix
 android.api = 34
 android.minapi = 21
 android.sdk = 34
 android.ndk = 25c
 android.build_tools_version = 34.0.0
 
-android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
+# Rechte entfernt, da die App nun in den internen Speicher schreibt
+# android.permissions = 
 android.archs = arm64-v8a, armeabi-v7a
 android.enable_androidx = True
 

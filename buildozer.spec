@@ -10,7 +10,7 @@ source.include_exts = py,png,jpg,kv,json,ttf
 version = 0.1
 
 # Anforderungen (sh und six helfen oft bei der Stabilität auf Android)
-requirements = python3,kivy==2.3.1,pillow,sh,six
+requirements = python3,kivy==2.3.1,pillow,sh,six,filetype
 
 orientation = portrait
 fullscreen = 1

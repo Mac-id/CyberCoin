@@ -1,6 +1,7 @@
 [app]
-title = CyberCoin
-package.name = cybercoin
+# Neuer Name der App
+title = FLIP IT
+package.name = flipit
 package.domain = org.pixelart
 
 source.dir = .
@@ -8,23 +9,23 @@ source.include_exts = py,png,jpg,kv,json,ttf
 
 version = 0.1
 
-# Wir fügen 'sh' und 'six' hinzu, da Kivy-Interna das oft brauchen
+# Anforderungen (sh und six helfen oft bei der Stabilität auf Android)
 requirements = python3,kivy==2.3.1,pillow,sh,six
 
 orientation = portrait
 fullscreen = 1
 
-# Erhöhung der API auf 34 (Standard für 2024/25) und NDK Fix
+# Das App Logo (Kopf Seite)
+icon.filename = pixil-frame-0-startkopf.png
+
+# Android API Einstellungen
 android.api = 34
 android.minapi = 21
 android.sdk = 34
 android.ndk = 25c
 android.build_tools_version = 34.0.0
 
-# Berechtigungen entfernt, da sie auf Android 13+ oft blockiert werden 
-# und für den internen App-Speicher (user_data_dir) nicht benötigt werden.
-# android.permissions = WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
-
+# Architekturen für moderne Handys
 android.archs = arm64-v8a, armeabi-v7a
 android.enable_androidx = True
 

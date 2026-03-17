@@ -125,10 +125,11 @@ class CyberCoinRoot(FloatLayout):
     sign_tex = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        # Den sicheren Speicherpfad für Android (und Desktop) abrufen
-        app = App.get_running_app()
-        if app:
-            store_path = os.path.join(app.user_data_dir, 'settings.json')
+        # Speicherort-Fix für Android
+        if platform == 'android':
+            from android.storage import app_storage_path
+            storage = app_storage_path()
+            store_path = os.path.join(storage, 'settings.json')
         else:
             store_path = 'settings.json'
             
@@ -149,7 +150,6 @@ class CyberCoinRoot(FloatLayout):
             except Exception as e:
                 print(f"Fehler beim Laden von bg{i}.png: {e}")
         
-        # Sicherstellen, dass die Textur existiert, bevor sie zugewiesen wird
         if f"bg{self.bg_index}" in self.all_bg_textures:
             self.bg_texture = self.all_bg_textures[f"bg{self.bg_index}"]
 
@@ -166,8 +166,7 @@ class CyberCoinRoot(FloatLayout):
                 elif key == "mode": self.btn_mode_tex = t
                 elif key == "logo": self.logo_tex = t
                 elif key == "sign": self.sign_tex = t
-            except Exception as e:
-                print(f"Fehler beim Laden von {f}: {e}")
+            except: pass
         super().__init__(**kwargs)
 
     def next_background(self):
@@ -188,7 +187,6 @@ class CyberCoinRoot(FloatLayout):
 
 class CyberCoinApp(App):
     def build(self):
-        self.icon = "pixil-frame-0-startkopf.png"
         return CyberCoinRoot()
 
 if __name__ == "__main__":

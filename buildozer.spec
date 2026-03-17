@@ -17,6 +17,7 @@ fullscreen = 1
 
 # Das App Logo (Kopf Seite)
 icon.filename = pixil-frame-0-startkopf.png
+android.adaptive_icon_scale = 1.0
 
 # Android API Einstellungen
 android.api = 34

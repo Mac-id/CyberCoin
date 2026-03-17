@@ -1,6 +1,6 @@
 import kivy
 import random
-import os  # <-- Hinzugefügt für die Pfad-Verwaltung
+import os
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
@@ -50,9 +50,11 @@ class Coin(Widget):
         for key, filename in files.items():
             try:
                 tex = CoreImage(filename).texture
-                tex.mag_filter = 'nearest'; tex.min_filter = 'nearest'
+                tex.mag_filter = 'nearest'
+                tex.min_filter = 'nearest'
                 self.textures[key] = tex
-            except: pass
+            except Exception as e:
+                print(f"Fehler beim Laden der Textur '{filename}': {e}")
 
     def update_texture(self, key):
         if key in self.textures:
@@ -123,10 +125,10 @@ class CyberCoinRoot(FloatLayout):
     sign_tex = ObjectProperty(None)
 
     def __init__(self, **kwargs):
-        # FIX: Auf Android das beschreibbare Datenverzeichnis nutzen
-        if platform == 'android':
-            app_dir = App.get_running_app().user_data_dir
-            store_path = os.path.join(app_dir, 'settings.json')
+        # Den sicheren Speicherpfad für Android (und Desktop) abrufen
+        app = App.get_running_app()
+        if app:
+            store_path = os.path.join(app.user_data_dir, 'settings.json')
         else:
             store_path = 'settings.json'
             
@@ -139,11 +141,17 @@ class CyberCoinRoot(FloatLayout):
 
         self.all_bg_textures = {}
         for i in range(1, 5):
-            t = CoreImage(f"bg{i}.png").texture
-            t.mag_filter = 'nearest'; t.min_filter = 'nearest'
-            self.all_bg_textures[f"bg{i}"] = t
+            try:
+                t = CoreImage(f"bg{i}.png").texture
+                t.mag_filter = 'nearest'
+                t.min_filter = 'nearest'
+                self.all_bg_textures[f"bg{i}"] = t
+            except Exception as e:
+                print(f"Fehler beim Laden von bg{i}.png: {e}")
         
-        self.bg_texture = self.all_bg_textures[f"bg{self.bg_index}"]
+        # Sicherstellen, dass die Textur existiert, bevor sie zugewiesen wird
+        if f"bg{self.bg_index}" in self.all_bg_textures:
+            self.bg_texture = self.all_bg_textures[f"bg{self.bg_index}"]
 
         assets = {
             "btn": "bg-button.png", "mode": "mode.png", 
@@ -152,26 +160,31 @@ class CyberCoinRoot(FloatLayout):
         for key, f in assets.items():
             try:
                 t = CoreImage(f).texture
-                t.mag_filter = 'nearest'; t.min_filter = 'nearest'
+                t.mag_filter = 'nearest'
+                t.min_filter = 'nearest'
                 if key == "btn": self.btn_bg_tex = t
                 elif key == "mode": self.btn_mode_tex = t
                 elif key == "logo": self.logo_tex = t
                 elif key == "sign": self.sign_tex = t
-            except: pass
+            except Exception as e:
+                print(f"Fehler beim Laden von {f}: {e}")
         super().__init__(**kwargs)
 
     def next_background(self):
         self.bg_index = self.bg_index + 1 if self.bg_index < 4 else 1
-        self.bg_texture = self.all_bg_textures[f"bg{self.bg_index}"]
+        if f"bg{self.bg_index}" in self.all_bg_textures:
+            self.bg_texture = self.all_bg_textures[f"bg{self.bg_index}"]
         self.store.put('background', index=self.bg_index)
 
     def toggle_mode(self):
         c = self.ids.coin
         if not c.is_flipping:
             if c.mode == "Kopf/Zahl":
-                c.mode = "Ja/Nein"; c.update_texture("7")
+                c.mode = "Ja/Nein"
+                c.update_texture("7")
             else:
-                c.mode = "Kopf/Zahl"; c.update_texture("0")
+                c.mode = "Kopf/Zahl"
+                c.update_texture("0")
 
 class CyberCoinApp(App):
     def build(self):

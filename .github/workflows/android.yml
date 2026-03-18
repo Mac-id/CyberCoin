@@ -1,0 +1,60 @@
+name: Android Build
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential git ffmpeg \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+            zlib1g-dev libsqlite3-dev sqlite3 \
+            bzip2 libbz2-dev libssl-dev \
+            libgdbm-dev liblzma-dev libreadline-dev libffi-dev \
+            autoconf automake libtool libtool-bin libltdl-dev pkg-config zip unzip
+
+          pip install --upgrade pip
+          pip install "buildozer>=1.5.0" "cython<3.0.0" "setuptools<70.0.0" virtualenv
+
+      - name: Build APK
+        run: |
+          # WICHTIG: Cache löschen, falls vorherige Fehler Dateien korrumpiert haben
+          rm -rf .buildozer
+          
+          # Alle System-Compiler-Pfade säubern
+          export CFLAGS=""
+          export CXXFLAGS=""
+          export LDFLAGS=""
+          
+          buildozer -v android debug
+        env:
+          APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
+          # Verhindert, dass Buildozer das falsche Java nutzt
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CyberCoin-Debug
+          path: bin/*.apk

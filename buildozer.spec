@@ -9,8 +9,7 @@ source.include_exts = py,png,jpg,kv,json,ttf
 version = 0.1
 
 # Wir fügen 'sh' und 'six' hinzu, da Kivy-Interna das oft brauchen
-requirements = python3,kivy==2.3.1,pillow,sh,six
-
+requirements = python3,kivy==2.3.1,pillow,sh,six,cython==3.0.10
 orientation = portrait
 fullscreen = 1
 

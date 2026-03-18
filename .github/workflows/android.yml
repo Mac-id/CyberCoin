@@ -39,19 +39,23 @@ jobs:
 
       - name: Build APK
         run: |
-          # WICHTIG: Cache löschen, falls vorherige Fehler Dateien korrumpiert haben
+          # Radikale Reinigung der Umgebungsvariablen
+          unset CPATH
+          unset C_INCLUDE_PATH
+          unset CPLUS_INCLUDE_PATH
+          unset OBJC_INCLUDE_PATH
+          unset LD_LIBRARY_PATH
+          unset LIBRARY_PATH
+          
+          # Cache löschen um Altlasten zu vermeiden
           rm -rf .buildozer
           
-          # Alle System-Compiler-Pfade säubern
-          export CFLAGS=""
-          export CXXFLAGS=""
-          export LDFLAGS=""
-          
+          # Build mit expliziten Flags starten
+          export APP_ANDROID_ACCEPT_SDK_LICENSE=True
           buildozer -v android debug
         env:
-          APP_ANDROID_ACCEPT_SDK_LICENSE: "True"
-          # Verhindert, dass Buildozer das falsche Java nutzt
-          JAVA_HOME: ${{ env.JAVA_HOME }}
+          # Sicherstellen, dass er die richtigen Tools nutzt
+          BUILDZER_WARN_ON_ROOT: 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

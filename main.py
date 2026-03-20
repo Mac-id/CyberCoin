@@ -1,6 +1,8 @@
 import kivy
 import random
 import os
+import os
+from kivy.resources import resource_add_path
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.widget import Widget
@@ -15,6 +17,10 @@ if platform != 'android':
     from kivy.core.window import Window
     Window.size = (360, 640)
     Window.title = "FLIP IT"
+
+# Fügt den assets-Ordner zum Suchpfad für Bilder/Sounds hinzu
+if os.path.exists('assets'):
+    resource_add_path(os.path.abspath('assets'))
 
 class Coin(Widget):
     coin_texture = ObjectProperty(None)

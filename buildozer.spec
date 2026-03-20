@@ -1,11 +1,12 @@
 [app]
-title = CyberCoin
-package.name = cybercoin
+title = FLIP IT
+package.name = flipit
 package.domain = org.pixelart
+icon.filename = %(source.dir)s/assets/pixel-frame-0-startkopf.png
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,json,ttf
-source.include_patterns = assets/*
+source.include_patterns = assets
 
 version = 0.1
 

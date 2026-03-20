@@ -40,7 +40,12 @@ jobs:
 
       - name: Build APK
         run: |
-          # Radikale Reinigung der Umgebungsvariablen
+          # Diese Flags lösen das "long" Problem bei Cython 3
+          export PIP_NO_CACHE_DIR=1
+          export CYTHON_FORCE_ACT_LIKE_PY2=0
+          # WICHTIG: Cython 3 mitteilen, dass es sich wie Cython 0.29 verhalten soll
+          export P4A_CYTHON_OPTS="-3 --language-level=3"
+          
           unset CPATH
           unset C_INCLUDE_PATH
           unset CPLUS_INCLUDE_PATH
@@ -48,14 +53,10 @@ jobs:
           unset LD_LIBRARY_PATH
           unset LIBRARY_PATH
           
-          # Cache löschen um Altlasten zu vermeiden
           rm -rf .buildozer
-          
-          # Build mit expliziten Flags starten
           export APP_ANDROID_ACCEPT_SDK_LICENSE=True
           buildozer -v android debug
         env:
-          # Sicherstellen, dass er die richtigen Tools nutzt
           BUILDZER_WARN_ON_ROOT: 1
 
       - name: Upload APK

@@ -9,8 +9,7 @@ source.include_patterns = assets/*
 
 version = 0.1
 
-# 'cython' wurde hier entfernt, da es nur fürs Bauen benötigt wird!
-requirements = python3,kivy==2.3.1,pillow,sh,six
+requirements = python3, kivy, pyjnius, pillow, sh, six
 orientation = portrait
 fullscreen = 1
 

@@ -2,7 +2,7 @@
 title = FLIP IT
 package.name = flipit
 package.domain = org.pixelart
-icon.filename = %(source.dir)s/assets/pixel-frame-0-startkopf.png
+icon.filename = %(source.dir)s/assets/pixil-frame-0-startkopf.png
 
 source.dir = .
 source.include_exts = py,png,jpg,kv,json,ttf
@@ -10,7 +10,7 @@ source.include_patterns = assets
 
 version = 0.1
 
-requirements = python3, kivy, pyjnius, pillow, sh, six
+requirements = python3, kivy, android, pyjnius, pillow, sh, six
 orientation = portrait
 fullscreen = 1
 

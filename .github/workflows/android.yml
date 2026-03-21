@@ -40,10 +40,7 @@ jobs:
 
       - name: Build APK
         run: |
-          # Wir löschen alle Reste von vorherigen Fehlversuchen
           rm -rf .buildozer
-          
-          # Sicherstellen, dass keine störenden Pfade gesetzt sind
           unset CPATH
           unset C_INCLUDE_PATH
           unset CPLUS_INCLUDE_PATH
@@ -52,7 +49,13 @@ jobs:
           unset LIBRARY_PATH
           
           export APP_ANDROID_ACCEPT_SDK_LICENSE=True
-          # Wir geben buildozer explizit Zeit und Infos
           buildozer -v android debug
         env:
-          BUILDZER_WARN_ON_ROOT: 1
+          BUILDOZER_WARN_ON_ROOT: 1
+          
+      # DIESEN TEIL HINZUFÜGEN:
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: flip-it-app
+          path: bin/*.apk

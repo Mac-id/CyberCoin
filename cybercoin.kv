@@ -1,7 +1,7 @@
 <Coin>:
     size_hint: None, None
-    size: 0.778 * root.design_min, 0.778 * root.design_min
-    pos: (self.parent.width/2 - self.width/2 + 0.00833 * root.design_min, self.parent.height/2 - self.height/2) if self.parent else (0, 0)
+    size: 0.778 * (self.parent.design_min if self.parent else 360), 0.778 * (self.parent.design_min if self.parent else 360)
+    pos: (self.parent.width/2 - self.width/2 + 0.00833 * (self.parent.design_min if self.parent else 360), self.parent.height/2 - self.height/2) if self.parent else (0, 0)
     canvas.before:
         PushMatrix
         Scale:

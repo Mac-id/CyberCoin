@@ -7,7 +7,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # ubuntu-latest (24.04) can leak host glibc includes into NDK clang and break Kivy
+    # (__GNUC_PREREQ / sys/cdefs.h). 22.04 is the common stable target for Buildozer/p4a.
+    runs-on: ubuntu-22.04
     timeout-minutes: 120
 
     steps:
@@ -39,9 +41,9 @@ jobs:
           path: |
             ~/.buildozer
             .buildozer
-          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec', 'main.py', 'cybercoin.kv') }}
+          key: buildozer-22.04-v2-${{ hashFiles('buildozer.spec', 'main.py', 'cybercoin.kv') }}
           restore-keys: |
-            buildozer-${{ runner.os }}-
+            buildozer-22.04-v2-
 
       - name: Install dependencies
         run: |
@@ -67,9 +69,14 @@ jobs:
           unset OBJC_INCLUDE_PATH
           unset LD_LIBRARY_PATH
           unset LIBRARY_PATH
+          unset PKG_CONFIG_PATH
+          unset CPPFLAGS
+          unset CFLAGS
+          unset CXXFLAGS
+          unset LDFLAGS
 
           export APP_ANDROID_ACCEPT_SDK_LICENSE=True
-          yes | buildozer -v android debug
+          buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 1
 

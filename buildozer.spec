@@ -20,7 +20,7 @@ android.sdk = 34
 android.ndk = 25b
 android.build_tools_version = 34.0.0
 
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a,armeabi-v7a
 android.enable_androidx = True
 
 [buildozer]

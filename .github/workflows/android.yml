@@ -3,13 +3,24 @@ name: Android Build
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          swap-storage: true
+          dotnet: true
+          haskell: true
+          large-packages: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -19,8 +30,18 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
+
+      - name: Cache Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec', 'main.py', 'cybercoin.kv') }}
+          restore-keys: |
+            buildozer-${{ runner.os }}-
 
       - name: Install dependencies
         run: |
@@ -32,28 +53,26 @@ jobs:
             zlib1g-dev libsqlite3-dev sqlite3 \
             bzip2 libbz2-dev libssl-dev \
             libgdbm-dev liblzma-dev libreadline-dev libffi-dev \
-            autoconf automake libtool libtool-bin libltdl-dev pkg-config zip unzip
+            autoconf automake libtool libtool-bin libltdl-dev pkg-config zip unzip \
+            libstdc++6
 
           pip install --upgrade pip
-          # WICHTIG: Wir erzwingen Cython < 3.0, um den "long" Fehler zu umgehen
           pip install "buildozer>=1.5.0" "Cython<3.0" "setuptools<70.0.0" virtualenv
 
       - name: Build APK
         run: |
-          rm -rf .buildozer
           unset CPATH
           unset C_INCLUDE_PATH
           unset CPLUS_INCLUDE_PATH
           unset OBJC_INCLUDE_PATH
           unset LD_LIBRARY_PATH
           unset LIBRARY_PATH
-          
+
           export APP_ANDROID_ACCEPT_SDK_LICENSE=True
-          buildozer -v android debug
+          yes | buildozer -v android debug
         env:
           BUILDOZER_WARN_ON_ROOT: 1
-          
-      # DIESEN TEIL HINZUFÜGEN:
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:

@@ -1,7 +1,6 @@
 import kivy
 import random
 import os
-import os
 from kivy.resources import resource_add_path
 from kivy.app import App
 from kivy.uix.floatlayout import FloatLayout
@@ -40,7 +39,8 @@ class Coin(Widget):
     def late_init(self, dt):
         self.update_texture("0")
         if self.parent:
-            self.center_x = self.parent.center_x + 3
+            off = min(self.parent.width, self.parent.height) * (3.0 / 360.0)
+            self.center_x = self.parent.center_x + off
             self.center_y = self.parent.center_y
 
     def load_textures(self):
@@ -124,6 +124,8 @@ class Coin(Widget):
         self.current_frame_idx += 1
 
 class CyberCoinRoot(FloatLayout):
+    """design_min tracks min(width,height) so KV can scale like the 360×640 ref window."""
+    design_min = NumericProperty(360.0)
     bg_index = NumericProperty(1)
     bg_texture = ObjectProperty(None)
     btn_bg_tex = ObjectProperty(None)
@@ -133,7 +135,8 @@ class CyberCoinRoot(FloatLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+        self.fbind('size', self._sync_design_min)
+
         self.store = None
         self.bg_index = 1
         try:
@@ -181,6 +184,11 @@ class CyberCoinRoot(FloatLayout):
                 elif key == "sign": self.sign_tex = t
             except Exception as e:
                 print(f"Fehler beim Laden von {f}: {e}")
+
+    def _sync_design_min(self, *args):
+        m = min(self.width, self.height)
+        if m > 1:
+            self.design_min = m
 
     def next_background(self):
         self.bg_index = self.bg_index + 1 if self.bg_index < 4 else 1

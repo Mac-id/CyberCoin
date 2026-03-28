@@ -1,9 +1,7 @@
-#:import dp kivy.metrics.dp
-
 <Coin>:
     size_hint: None, None
-    size: dp(280), dp(280)
-    pos: (self.parent.width/2 - self.width/2 + dp(3), self.parent.height/2 - self.height/2) if self.parent else (0,0)
+    size: 0.778 * root.design_min, 0.778 * root.design_min
+    pos: (self.parent.width/2 - self.width/2 + 0.00833 * root.design_min, self.parent.height/2 - self.height/2) if self.parent else (0, 0)
     canvas.before:
         PushMatrix
         Scale:
@@ -29,22 +27,20 @@
             size: self.size
             texture: root.bg_texture
 
-    # Flip-It Logo
+    # Flip-It Logo (380×180 ref at 360-wide design)
     Image:
         size_hint: None, None
-        size: dp(380), dp(180) 
-        allow_stretch: True
-        keep_ratio: True
-        pos: (root.width/2 - self.width/2, coin.top - dp(75)) 
+        size: min(root.width * 0.98, 1.055 * root.design_min), min(root.width * 0.98, 1.055 * root.design_min) * (180. / 380.)
+        fit_mode: "contain"
+        pos: (root.width/2 - self.width/2, coin.top - 0.208 * root.design_min)
         texture: root.logo_tex
 
     # SIGNATUR
     Image:
         size_hint: None, None
-        size: dp(90), dp(45) 
-        pos_hint: {'x': 0.05, 'y': 0.05} 
-        allow_stretch: True
-        keep_ratio: True
+        size: 0.25 * root.design_min, 0.125 * root.design_min
+        pos_hint: {'x': 0.05, 'y': 0.05}
+        fit_mode: "contain"
         texture: root.sign_tex
 
     Coin:
@@ -53,7 +49,7 @@
     # BACKGROUND BUTTON
     Button:
         size_hint: None, None
-        size: dp(85), dp(85)
+        size: 0.236 * root.design_min, 0.236 * root.design_min
         pos_hint: {'top': 0.98, 'right': 0.98} 
         background_color: 0, 0, 0, 0
         on_release: root.next_background()
@@ -75,7 +71,7 @@
     # MODE BUTTON
     Button:
         size_hint: None, None
-        size: dp(130), dp(75) 
+        size: 0.361 * root.design_min, 0.208 * root.design_min
         pos_hint: {'right': 0.98, 'y': 0.03} 
         background_color: 0, 0, 0, 0
         on_release: root.toggle_mode()
